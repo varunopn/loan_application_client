@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "Loan Platform POC - User-Facing Application",
   "type": "module",
-  "deploy": "npm run build && gh-pages -d dist",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
     "react": "^18.3.1",
