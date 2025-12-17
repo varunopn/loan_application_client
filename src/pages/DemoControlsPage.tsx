@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react';
 import { Layout } from '../components/Layout';
 import { useAppStore } from '../store/useAppStore';
-import { demoApi } from '../services/mockApi';
+import { demoApi, loanApi } from '../services/mockApi';
 import { KycStatus, LoanStatus } from '../types';
 
 export function DemoControlsPage() {
