@@ -7,9 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { Stepper } from '../components/Stepper';
 import { useAppStore } from '../store/useAppStore';
-import { loanApi, documentApi } from '../services/mockApi';
-import { LoanApplication, DocumentItem } from '../types';
-import { validators } from '../utils/validators';
+import { loanApi } from '../services/mockApi';
+import { LoanApplication } from '../types';
 
 export function LoanApplicationPage() {
   const navigate = useNavigate();
@@ -37,7 +36,6 @@ export function LoanApplicationPage() {
     },
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (session) {

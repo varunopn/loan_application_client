@@ -52,18 +52,18 @@ export function LoanReviewPage() {
     return documents.find(doc => doc.category === category);
   };
 
-  const requiredDocs = [
-    { category: 'id_document' as const, label: 'ID Document', required: true },
-    { category: 'income_proof' as const, label: 'Income Proof', required: true },
-    { category: 'address_proof' as const, label: 'Address Proof', required: true },
+  const requiredDocs: Array<{ category: DocumentItem['category']; label: string; required: boolean }> = [
+    { category: 'id_document', label: 'ID Document', required: true },
+    { category: 'income_proof', label: 'Income Proof', required: true },
+    { category: 'address_proof', label: 'Address Proof', required: true },
   ];
 
   if (application.personalInfo.maritalStatus === 'married') {
-    requiredDocs.push({ category: 'marriage_certificate' as const, label: 'Marriage Certificate', required: false });
+    requiredDocs.push({ category: 'marriage_certificate', label: 'Marriage Certificate', required: false });
   }
 
   if (application.personalInfo.hasGuarantor) {
-    requiredDocs.push({ category: 'guarantor_document' as const, label: 'Guarantor Document', required: false });
+    requiredDocs.push({ category: 'guarantor_document', label: 'Guarantor Document', required: false });
   }
 
   const allRequiredDocsUploaded = requiredDocs

@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { useAppStore } from '../store/useAppStore';
 import { loanApi, timelineApi } from '../services/mockApi';
-import { LoanApplication, TimelineEvent } from '../types';
+import { TimelineEvent } from '../types';
 import { formatters } from '../utils/formatters';
 
 export function LoanResultPage() {

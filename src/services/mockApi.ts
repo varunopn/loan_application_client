@@ -77,14 +77,14 @@ export const sessionApi = {
 
 export const authApi = {
   // Request OTP (mock)
-  async requestOtp(phoneOrEmail: string): Promise<{ success: boolean; message: string }> {
+  async requestOtp(_phoneOrEmail: string): Promise<{ success: boolean; message: string }> {
     await delay(800);
     // Always succeed for POC
     return { success: true, message: 'OTP sent successfully (use 123456)' };
   },
 
   // Verify OTP (mock)
-  async verifyOtp(phoneOrEmail: string, otp: string): Promise<{ success: boolean; message: string }> {
+  async verifyOtp(_phoneOrEmail: string, otp: string): Promise<{ success: boolean; message: string }> {
     await delay(600);
     if (otp === '123456') {
       return { success: true, message: 'OTP verified' };
