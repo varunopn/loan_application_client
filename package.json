@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Loan Platform POC - User-Facing Application",
   "type": "module",
+  "deploy": "npm run build && gh-pages -d dist",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -24,6 +25,7 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.11",
+    "gh-pages": "^6.3.0",
     "typescript": "^5.5.4",
     "vite": "^7.3.0"
   }
