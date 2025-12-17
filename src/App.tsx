@@ -25,7 +25,7 @@ import './App.css';
 
 function App() {
   return (
-    <BrowserRouter basename="/loan_application">
+    <BrowserRouter basename="/loan_application_client">
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
