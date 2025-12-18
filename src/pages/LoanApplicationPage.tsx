@@ -30,6 +30,12 @@ export function LoanApplicationPage() {
       monthlyIncome: 0,
       yearsOfWork: 0,
     },
+    carDetails: {
+      brand: '',
+      model: '',
+      year: new Date().getFullYear(),
+      estimatedPrice: 0,
+    },
     loanDetails: {
       downPayment: 0,
       loanPeriodMonths: 48,
@@ -51,7 +57,8 @@ export function LoanApplicationPage() {
   const steps = [
     { label: 'Personal', completed: currentStep > 0 },
     { label: 'Financial', completed: currentStep > 1 },
-    { label: 'Loan Details', completed: currentStep > 2 },
+    { label: 'Car Details', completed: currentStep > 2 },
+    { label: 'Loan Details', completed: currentStep > 3 },
   ];
 
   const saveDraft = () => {
@@ -105,6 +112,14 @@ export function LoanApplicationPage() {
         newErrors.yearsOfWork = 'Years of work is required';
       }
     } else if (currentStep === 2) {
+      // Car Details validation
+      if (!formData.carDetails?.brand) newErrors.brand = 'Car brand is required';
+      if (!formData.carDetails?.model) newErrors.model = 'Car model is required';
+      if (!formData.carDetails?.year || formData.carDetails.year < 1900) newErrors.year = 'Valid year is required';
+      if (!formData.carDetails?.estimatedPrice || formData.carDetails.estimatedPrice <= 0) {
+        newErrors.estimatedPrice = 'Estimated price must be greater than 0';
+      }
+    } else if (currentStep === 3) {
       // Loan Details validation
       if (!formData.loanDetails?.downPayment || formData.loanDetails.downPayment <= 0) {
         newErrors.downPayment = 'Down payment must be greater than 0';
@@ -126,6 +141,13 @@ export function LoanApplicationPage() {
     setFormData({
       ...formData,
       financialInfo: { ...formData.financialInfo!, [field]: value },
+    });
+  };
+
+  const updateCarDetails = (field: string, value: any) => {
+    setFormData({
+      ...formData,
+      carDetails: { ...formData.carDetails!, [field]: value },
     });
   };
 
@@ -158,8 +180,17 @@ export function LoanApplicationPage() {
         )}
 
         {currentStep === 2 && (
+          <CarDetailsStep
+            data={formData.carDetails!}
+            errors={errors}
+            onChange={updateCarDetails}
+          />
+        )}
+
+        {currentStep === 3 && (
           <LoanDetailsStep
             data={formData.loanDetails!}
+            carPrice={formData.carDetails?.estimatedPrice || 0}
             errors={errors}
             onChange={updateLoanDetails}
           />
@@ -171,7 +202,7 @@ export function LoanApplicationPage() {
               Back
             </button>
           )}
-          {currentStep < 2 ? (
+          {currentStep < 3 ? (
             <button className="btn btn-primary" onClick={handleNext} style={{ flex: 1 }}>
               Next
             </button>
@@ -371,11 +402,110 @@ function FinancialInfoStep({ data, errors, onChange }: any) {
   );
 }
 
-// Step 3: Loan Details
-function LoanDetailsStep({ data, errors, onChange }: any) {
+// Step 3: Car Details
+function CarDetailsStep({ data, errors, onChange }: any) {
+  const currentYear = new Date().getFullYear();
+  const carBrands = [
+    'Toyota', 'Honda', 'Ford', 'Chevrolet', 'Nissan', 'BMW', 'Mercedes-Benz', 
+    'Audi', 'Volkswagen', 'Hyundai', 'Kia', 'Mazda', 'Subaru', 'Lexus', 
+    'Tesla', 'Porsche', 'Land Rover', 'Jeep', 'Ram', 'GMC', 'Other'
+  ];
+
+  return (
+    <div>
+      <h2 className="mb-3">Car Details</h2>
+      <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
+        Tell us about the car you want to finance
+      </p>
+
+      <div className="form-group">
+        <label className="form-label required">Car Brand</label>
+        <select
+          className={`form-select ${errors.brand ? 'error' : ''}`}
+          value={data.brand}
+          onChange={(e) => onChange('brand', e.target.value)}
+        >
+          <option value="">Select brand</option>
+          {carBrands.map(brand => (
+            <option key={brand} value={brand}>{brand}</option>
+          ))}
+        </select>
+        {errors.brand && <p className="form-error">{errors.brand}</p>}
+      </div>
+
+      <div className="form-group">
+        <label className="form-label required">Car Model</label>
+        <input
+          type="text"
+          className={`form-input ${errors.model ? 'error' : ''}`}
+          placeholder="e.g., Camry, Accord, Model 3"
+          value={data.model}
+          onChange={(e) => onChange('model', e.target.value)}
+        />
+        {errors.model && <p className="form-error">{errors.model}</p>}
+      </div>
+
+      <div className="form-group">
+        <label className="form-label required">Year</label>
+        <input
+          type="number"
+          className={`form-input ${errors.year ? 'error' : ''}`}
+          value={data.year}
+          onChange={(e) => onChange('year', parseInt(e.target.value) || currentYear)}
+          min="1900"
+          max={currentYear + 1}
+        />
+        {errors.year && <p className="form-error">{errors.year}</p>}
+      </div>
+
+      <div className="form-group">
+        <label className="form-label required">Estimated Price ($)</label>
+        <input
+          type="number"
+          className={`form-input ${errors.estimatedPrice ? 'error' : ''}`}
+          placeholder="e.g., 25000"
+          value={data.estimatedPrice}
+          onChange={(e) => onChange('estimatedPrice', parseFloat(e.target.value) || 0)}
+          min="0"
+          step="1000"
+        />
+        {errors.estimatedPrice && <p className="form-error">{errors.estimatedPrice}</p>}
+        <p className="form-help">Enter the estimated price of the car</p>
+      </div>
+
+      <div className="alert alert-info mt-3">
+        <p><strong>💡 Tip:</strong> Research the market value of your desired car to ensure you enter an accurate price.</p>
+      </div>
+    </div>
+  );
+}
+
+// Step 4: Loan Details
+function LoanDetailsStep({ data, carPrice, errors, onChange }: any) {
+  const loanAmount = carPrice > data.downPayment ? carPrice - data.downPayment : 0;
+
   return (
     <div>
       <h2 className="mb-3">Loan Request Details</h2>
+
+      <div className="card mb-3" style={{ backgroundColor: '#f0f9ff', border: '1px solid #3b82f6' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+          <span style={{ color: '#6b7280' }}>Car Price:</span>
+          <span style={{ fontWeight: '600' }}>${carPrice.toLocaleString()}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+          <span style={{ color: '#6b7280' }}>Down Payment:</span>
+          <span style={{ fontWeight: '600' }}>- ${data.downPayment.toLocaleString()}</span>
+        </div>
+        <div style={{ borderTop: '1px solid #3b82f6', paddingTop: '0.5rem', marginTop: '0.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontWeight: '600', color: '#1e40af' }}>Loan Amount Needed:</span>
+            <span style={{ fontWeight: '700', color: '#1e40af', fontSize: '1.25rem' }}>
+              ${loanAmount.toLocaleString()}
+            </span>
+          </div>
+        </div>
+      </div>
 
       <div className="form-group">
         <label className="form-label required">Down Payment ($)</label>
@@ -388,7 +518,7 @@ function LoanDetailsStep({ data, errors, onChange }: any) {
           step="1000"
         />
         {errors.downPayment && <p className="form-error">{errors.downPayment}</p>}
-        <p className="form-help">Minimum recommended: $5,000</p>
+        <p className="form-help">Minimum recommended: 20% of car price (${(carPrice * 0.2).toLocaleString()})</p>
       </div>
 
       <div className="form-group">
@@ -405,7 +535,7 @@ function LoanDetailsStep({ data, errors, onChange }: any) {
       </div>
 
       <div className="alert alert-info mt-3">
-        <p><strong>Note:</strong> The loan amount will be calculated based on your income, down payment, and selected loan period. Final terms will be provided upon approval.</p>
+        <p><strong>Note:</strong> Final loan terms including interest rate and monthly payment will be calculated upon approval based on your credit profile and financial information.</p>
       </div>
     </div>
   );

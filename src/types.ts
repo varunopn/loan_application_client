@@ -9,7 +9,9 @@ export type EventSource = 'user' | 'system' | 'loanEngineMock';
 // User Interface
 export interface User {
   id: string;
+  username: string;
   phoneOrEmail: string;
+  password: string; // Demo only - in production this would be hashed
   pin: string; // Demo only - in production this would be hashed
   name?: string;
   createdAt: string;
@@ -72,7 +74,15 @@ export interface LoanApplication {
     yearsOfWork: number;
   };
   
-  // Step 3 - Loan Request Details
+  // Step 3 - Car Details
+  carDetails: {
+    brand: string;
+    model: string;
+    year: number;
+    estimatedPrice: number;
+  };
+  
+  // Step 4 - Loan Request Details
   loanDetails: {
     downPayment: number;
     loanPeriodMonths: 48 | 60 | 72;

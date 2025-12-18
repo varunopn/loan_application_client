@@ -101,6 +101,10 @@ export function ProfilePage() {
           <h3 className="card-title">Account Information</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <div>
+              <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>Username</p>
+              <p style={{ fontWeight: '500' }}>@{session.user.username}</p>
+            </div>
+            <div>
               <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>Contact</p>
               <p style={{ fontWeight: '500' }}>{session.user.phoneOrEmail}</p>
             </div>

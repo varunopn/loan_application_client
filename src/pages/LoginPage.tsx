@@ -13,8 +13,10 @@ export function LoginPage() {
   const navigate = useNavigate();
   const { setSession, isAuthenticated, loadSession } = useAppStore();
   
-  const [phoneOrEmail, setPhoneOrEmail] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [pin, setPin] = useState('');
+  const [loginMethod, setLoginMethod] = useState<'password' | 'pin'>('password');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -29,21 +31,30 @@ export function LoginPage() {
     e.preventDefault();
     setError('');
 
-    const emailPhoneError = validators.emailOrPhone(phoneOrEmail);
-    if (emailPhoneError) {
-      setError(emailPhoneError);
+    if (!usernameOrEmail) {
+      setError('Username or email is required');
       return;
     }
 
-    const pinError = validators.pin(pin);
-    if (pinError) {
-      setError(pinError);
-      return;
+    if (loginMethod === 'password') {
+      if (!password || password.length < 6) {
+        setError('Password is required');
+        return;
+      }
+    } else {
+      const pinError = validators.pin(pin);
+      if (pinError) {
+        setError(pinError);
+        return;
+      }
     }
 
     setLoading(true);
     try {
-      const result = await authApi.login(phoneOrEmail, pin);
+      const result = loginMethod === 'password' 
+        ? await authApi.login(usernameOrEmail, password)
+        : await authApi.quickLogin(usernameOrEmail, pin);
+        
       if (result.success && result.session) {
         setSession(result.session);
         navigate('/home');
@@ -72,31 +83,65 @@ export function LoginPage() {
             </div>
           )}
 
+          {/* Login Method Toggle */}
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+            <button
+              type="button"
+              className={`btn ${loginMethod === 'password' ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => setLoginMethod('password')}
+              style={{ flex: 1 }}
+            >
+              Password
+            </button>
+            <button
+              type="button"
+              className={`btn ${loginMethod === 'pin' ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => setLoginMethod('pin')}
+              style={{ flex: 1 }}
+            >
+              Quick PIN
+            </button>
+          </div>
+
           <div className="form-group">
-            <label className="form-label required">Phone or Email</label>
+            <label className="form-label required">Username or Email</label>
             <input
               type="text"
               className="form-input"
-              placeholder="Enter phone or email"
-              value={phoneOrEmail}
-              onChange={(e) => setPhoneOrEmail(e.target.value)}
+              placeholder="Enter username or email"
+              value={usernameOrEmail}
+              onChange={(e) => setUsernameOrEmail(e.target.value)}
               disabled={loading}
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label required">PIN</label>
-            <input
-              type="password"
-              className="form-input"
-              placeholder="Enter your PIN"
-              value={pin}
-              onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              disabled={loading}
-              maxLength={6}
-              style={{ fontSize: '1.5rem', letterSpacing: '0.5rem', textAlign: 'center' }}
-            />
-          </div>
+          {loginMethod === 'password' ? (
+            <div className="form-group">
+              <label className="form-label required">Password</label>
+              <input
+                type="password"
+                className="form-input"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+          ) : (
+            <div className="form-group">
+              <label className="form-label required">PIN</label>
+              <input
+                type="password"
+                className="form-input"
+                placeholder="Enter your PIN"
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                disabled={loading}
+                maxLength={6}
+                style={{ fontSize: '1.5rem', letterSpacing: '0.5rem', textAlign: 'center' }}
+              />
+            </div>
+          )}
 
           <button
             type="submit"

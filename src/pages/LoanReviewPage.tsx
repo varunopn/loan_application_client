@@ -127,10 +127,24 @@ export function LoanReviewPage() {
           <InfoRow label="Years of Work" value={`${application.financialInfo.yearsOfWork} years`} />
         </div>
 
+        {/* Car Details */}
+        <div className="card">
+          <h3 className="card-title">🚗 Car Details</h3>
+          <InfoRow label="Brand" value={application.carDetails.brand} />
+          <InfoRow label="Model" value={application.carDetails.model} />
+          <InfoRow label="Year" value={application.carDetails.year.toString()} />
+          <InfoRow label="Estimated Price" value={`$${application.carDetails.estimatedPrice.toLocaleString()}`} />
+        </div>
+
         {/* Loan Details */}
         <div className="card">
           <h3 className="card-title">Loan Request</h3>
+          <InfoRow label="Car Price" value={`$${application.carDetails.estimatedPrice.toLocaleString()}`} />
           <InfoRow label="Down Payment" value={`$${application.loanDetails.downPayment.toLocaleString()}`} />
+          <InfoRow 
+            label="Loan Amount Needed" 
+            value={`$${(application.carDetails.estimatedPrice - application.loanDetails.downPayment).toLocaleString()}`} 
+          />
           <InfoRow label="Loan Period" value={`${application.loanDetails.loanPeriodMonths} months`} />
         </div>
 

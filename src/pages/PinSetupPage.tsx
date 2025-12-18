@@ -17,6 +17,9 @@ export function PinSetupPage() {
   const phoneOrEmail = location.state?.phoneOrEmail || '';
   const consent = location.state?.consent;
   
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [error, setError] = useState('');
@@ -31,6 +34,24 @@ export function PinSetupPage() {
     e.preventDefault();
     setError('');
 
+    // Validate username
+    if (!username || username.length < 3) {
+      setError('Username must be at least 3 characters');
+      return;
+    }
+
+    // Validate password
+    if (!password || password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    // Validate PIN
     const pinError = validators.pin(pin);
     if (pinError) {
       setError(pinError);
@@ -50,6 +71,8 @@ export function PinSetupPage() {
       // Complete registration
       const { session } = await authApi.completeRegistration(
         phoneOrEmail,
+        username,
+        password,
         pin,
         consent,
         locationData
@@ -65,11 +88,11 @@ export function PinSetupPage() {
   };
 
   return (
-    <Layout showBackButton title="Setup PIN">
+    <Layout showBackButton title="Account Setup">
       <div className="page">
         <div className="page-header">
-          <h1 className="page-title">Create Your PIN</h1>
-          <p className="page-subtitle">Choose a secure PIN to protect your account</p>
+          <h1 className="page-title">Create Your Account</h1>
+          <p className="page-subtitle">Set up your login credentials</p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -80,7 +103,45 @@ export function PinSetupPage() {
           )}
 
           <div className="alert alert-info">
-            <strong>Note:</strong> For demo purposes, PIN is stored as plain text. In production, it would be securely hashed.
+            <strong>Note:</strong> For demo purposes, credentials are stored as plain text. In production, they would be securely hashed.
+          </div>
+
+          <div className="form-group">
+            <label className="form-label required">Username</label>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Choose a username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={loading}
+            />
+            <p className="form-help">Minimum 3 characters</p>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label required">Password</label>
+            <input
+              type="password"
+              className="form-input"
+              placeholder="Create a password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+            />
+            <p className="form-help">Minimum 6 characters</p>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label required">Confirm Password</label>
+            <input
+              type="password"
+              className="form-input"
+              placeholder="Re-enter password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={loading}
+            />
           </div>
 
           <div className="form-group">
@@ -95,7 +156,7 @@ export function PinSetupPage() {
               maxLength={6}
               style={{ fontSize: '1.5rem', letterSpacing: '0.5rem', textAlign: 'center' }}
             />
-            <p className="form-help">Use 4-6 digits</p>
+            <p className="form-help">Use 4-6 digits for quick login</p>
           </div>
 
           <div className="form-group">
@@ -115,7 +176,7 @@ export function PinSetupPage() {
           <button
             type="submit"
             className="btn btn-primary btn-block btn-lg"
-            disabled={loading || pin.length < 4 || pin !== confirmPin}
+            disabled={loading}
           >
             {loading ? 'Creating Account...' : 'Complete Registration'}
           </button>

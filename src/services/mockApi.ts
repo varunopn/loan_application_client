@@ -102,25 +102,34 @@ export const authApi = {
   },
 
   // Complete registration
-  async completeRegistration(phoneOrEmail: string, pin: string, consent: ConsentRecord, location: LocationData): Promise<{ user: User; session: SessionData }> {
+  async completeRegistration(phoneOrEmail: string, username: string, password: string, pin: string, consent: ConsentRecord, location: LocationData): Promise<{ user: User; session: SessionData }> {
     await delay(500);
     
     const users = getFromStorage<User[]>(KEYS.USERS) || [];
     
-    // Check if user exists
+    // Check if username already exists
+    if (users.find(u => u.username === username)) {
+      throw new Error('Username already exists');
+    }
+    
+    // Check if user exists by phone/email
     let user = users.find(u => u.phoneOrEmail === phoneOrEmail);
     
     if (!user) {
       user = {
         id: generateId(),
+        username,
         phoneOrEmail,
+        password, // Demo only - would be hashed in production
         pin, // Demo only - would be hashed in production
         createdAt: new Date().toISOString(),
       };
       users.push(user);
       saveToStorage(KEYS.USERS, users);
     } else {
-      // Update PIN if re-registering
+      // Update credentials if re-registering
+      user.username = username;
+      user.password = password;
       user.pin = pin;
       saveToStorage(KEYS.USERS, users);
     }
@@ -147,12 +156,51 @@ export const authApi = {
     return { user, session };
   },
 
-  // Login
-  async login(phoneOrEmail: string, pin: string): Promise<{ success: boolean; session?: SessionData; message?: string }> {
+  // Login with username/password
+  async login(usernameOrEmail: string, password: string): Promise<{ success: boolean; session?: SessionData; message?: string }> {
     await delay(600);
     
     const users = getFromStorage<User[]>(KEYS.USERS) || [];
-    const user = users.find(u => u.phoneOrEmail === phoneOrEmail && u.pin === pin);
+    const user = users.find(u => 
+      (u.username === usernameOrEmail || u.phoneOrEmail === usernameOrEmail) && 
+      u.password === password
+    );
+
+    if (!user) {
+      return { success: false, message: 'Invalid credentials' };
+    }
+
+    // Get consent
+    const consent = getFromStorage<ConsentRecord>(`${KEYS.SESSION}_consent_${user.id}`) || {
+      consentAccepted: true,
+      consentVersion: 'v1',
+      acceptedAt: new Date().toISOString()
+    };
+
+    // Get location (or use stored)
+    const location: LocationData = { locationEnabled: false };
+
+    const session: SessionData = {
+      user: { ...user, lastLogin: new Date().toISOString() },
+      consent,
+      location,
+      loginAt: new Date().toISOString()
+    };
+
+    sessionApi.setSession(session);
+
+    return { success: true, session };
+  },
+
+  // Quick login with PIN
+  async quickLogin(usernameOrEmail: string, pin: string): Promise<{ success: boolean; session?: SessionData; message?: string }> {
+    await delay(600);
+    
+    const users = getFromStorage<User[]>(KEYS.USERS) || [];
+    const user = users.find(u => 
+      (u.username === usernameOrEmail || u.phoneOrEmail === usernameOrEmail) && 
+      u.pin === pin
+    );
 
     if (!user) {
       return { success: false, message: 'Invalid credentials' };
@@ -326,6 +374,12 @@ export const loanApi = {
           employmentStatus: 'employed',
           monthlyIncome: 0,
           yearsOfWork: 0
+        },
+        carDetails: {
+          brand: '',
+          model: '',
+          year: new Date().getFullYear(),
+          estimatedPrice: 0
         },
         loanDetails: {
           downPayment: 0,
